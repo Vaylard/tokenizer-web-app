@@ -1,0 +1,5 @@
+flask
+numpy
+scipy
+h5py==2.10.0
+tensorflow-cpu

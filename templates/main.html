@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>JP Morph</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            $(window).bind('load', function () {
+                let typingTimer;
+                let doneTypingInterval = 2000;
+                let $input = $('#raw-sentence-input');
+
+                $input.on('input', function () {
+                    clearTimeout(typingTimer);
+                    $('#tokens-output').text('. . .');
+                    $('#legend').html('');
+                    typingTimer = setTimeout(doneTyping, doneTypingInterval);
+                });
+            });
+
+            function doneTyping() {
+                let $input  = $('#raw-sentence-input');
+                if ($input.val() !== '') {
+                    $.ajax({
+                        method: 'POST',
+                        url: '/api/tokenize',
+                        contentType: 'application/json; charset=UTF-8',
+                        data: JSON.stringify({'sentence': $input.val()}),
+                        dataType: 'json',
+                        success: function (data) {
+                            analysisOutput(data);
+                        }
+                    });
+                }
+                else {
+                    $('#tokens-output').text('');
+                }
+            }
+            
+            function analysisOutput(analysis) {
+                let $output = $('#tokens-output');
+                let colorCode = {
+                    '代名詞': '#67b850',
+                    '副詞': '#d75d3c',
+                    '助動詞': '#0000ff',
+                    '助詞': '#ff0000',
+                    '動詞': '#00ff00',
+                    '名詞': '#00ffff',
+                    '外国語': '#eba7ca',
+                    '形容詞': '#228b22',
+                    '形状詞': '#1e90ff',
+                    '感動詞': '#1619d0',
+                    '接尾辞': '#ffff00',
+                    '接続詞': '#c3ead2',
+                    '接頭辞': '#f51af6',
+                    '絵文字': '#934662',
+                    '補助記号': '#9546c4',
+                    '記号': '#f0c710',
+                    '連体詞': '#c44179'
+                };
+                
+                let highlightTag = function (postag) {
+                    $('.postag-name').each( function (index) {
+                        if ($(this).text() == postag) {
+                            $(this).css('font-weight', 'bold');
+                        }
+                        else {
+                            $(this).css('color', '#555');
+                        }
+                    });
+                };
+                
+                let dehighlightTags = function () {
+                    $('.postag-name').each(function (index) {
+                        $(this).css('color', 'black');
+                        $(this).css('font-weight', 'normal');
+                    });
+                };
+                
+                $output.text('');
+                for (let token of analysis['tokens']) {
+                    let tokenEl = document.createElement('span');
+                    tokenEl.innerHTML = token['token'];
+                    tokenEl.classList.add('token');
+                    tokenEl.style.borderColor = colorCode[token['pos']];
+                    
+                    tokenEl.addEventListener('mouseenter', function () { highlightTag(token['pos']); });
+                    tokenEl.addEventListener('mouseleave', dehighlightTags);
+                    
+                    $output.append(tokenEl);
+                }
+                
+                let uniquePostags = new Set();
+                for (let token of analysis['tokens']) {
+                    uniquePostags.add(token['pos']);
+                }
+                for (let postag of uniquePostags) {
+                    postagEl = document.createElement('div');
+                    postagName = document.createElement('div');
+                    postagMark = document.createElement('div');
+                    
+                    postagEl.classList.add('postag');
+                    postagName.classList.add('postag-name');
+                    postagName.innerHTML = postag;
+                    postagMark.classList.add('dot');
+                    postagMark.style.backgroundColor = colorCode[postag];
+                    
+                    postagEl.append(postagMark);
+                    postagEl.append(postagName);
+                    $('#legend').append(postagEl);
+                }
+            }
+        </script>
+        <style>
+            body {
+                padding: 50px;
+            }
+
+            .header {
+                margin-bottom: 50px;
+                font-size: 20pt;
+                font-weight: bold;
+            }
+
+            .input-output-block {
+                display: block;
+                margin-bottom: 30px;
+                margin-top: 30px;
+                width: 75%;
+            }
+
+            .text-field {
+                padding: 5px;
+                display: block;
+                height: 150px;
+                width: 62%;
+    
+                border: 3px solid #555;
+                border-radius: 5px;
+                overflow-y: scroll;
+                word-wrap: break-word;
+    
+                font-size: 14pt;
+                font-family: Noto Sans JP, Noto Sans;
+            }
+
+            .label {
+                margin-bottom: 10px;
+    
+                font-size: 12pt;
+                font-weight: bold;
+                color: #111;
+            }
+            
+            .token {
+                display: block;
+                float: left;
+                padding-left: 2px;
+                padding-right: 2px;
+                margin-right: 5px;
+                margin-bottom: 5px;
+                border-radius: 10px;
+                border-style: solid;
+                border-width: 4px;
+            }
+            
+            #legend {
+                float: right;
+                height: 150px;
+                width: 300px;
+                padding: 0;
+            }
+            
+            .postag {
+                margin: 0;
+                padding: 5px;
+                width: 90px;
+                float: left;
+            }
+            
+            .dot {
+                float: left;
+                width: 15px;
+                height: 15px;
+                border-radius: 50%;
+                margin: 4px 5px 3px 3px;
+            }
+            
+            .postag-name {
+                font-family: Noto Sans JP;
+                font-size: 12pt;
+                color: black;
+                
+                transition: color 0.5s ease;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">An okayish Japanese morphological analyzer</div>
+        <div class="input-output-block">
+            <div class="label">Sentence:</div>
+            <textarea id="raw-sentence-input" class="text-field" placeholder="Enter the sentence..." style="resize: none"></textarea>
+        </div>
+        <div class="input-output-block">
+            <div class="label">Tokens:</div>
+            <div id="legend"></div>
+            <div id="tokens-output" class="text-field"></div>
+        </div>
+    </body>
+</html>
