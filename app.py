@@ -9,15 +9,15 @@ app.config['JSON_AS_ASCII'] = False
 def _load_models():
     analyzer.load_keras_models()
 
-@app.route('/', methods=['GET'])
-def main_page():
-    return render_template('main.html')
+@app.route('/')
+def index_page():
+    return app.send_static_file('index.html')
 
 @app.route('/api/tokenize', methods=['POST'])
 def tokenize_sentence():
     try:
         raw_sentence = request.get_json()['sentence']
     except Exception:
-        return 'Bad Request'
+        return {'error': 'Bad Request'}, 400
     analysis = analyzer.analyze(raw_sentence)
-    return jsonify(analysis)
+    return analysis

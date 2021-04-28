@@ -1,0 +1,78 @@
+body {
+    padding: 50px;
+}
+
+.header {
+    margin-bottom: 50px;
+    font-size: 20pt;
+    font-weight: bold;
+}
+
+.input-output-block {
+    display: block;
+    margin: 30px 0 30px 0;
+    width: 75%;
+}
+
+.text-field {
+    padding: 5px;
+    display: block;
+    height: 150px;
+    width: 62%;
+    border: 3px solid #555;
+    border-radius: 5px;
+    overflow-y: scroll;
+    word-wrap: break-word;
+    font-size: 14pt;
+    font-family: Noto Sans JP, Noto Sans;
+}
+
+.label {
+    margin-bottom: 10px;
+    font-size: 12pt;
+    font-weight: bold;
+    color: #111;
+}
+
+.token {
+    display: block;
+    float: left;
+    padding: 0 2px 0 2px;
+    margin: 0 5px 5px 0;
+    border-radius: 10px;
+    border: 4px solid;
+}
+
+#legend {
+    float: right;
+    height: 150px;
+    width: 300px;
+    padding: 0;
+}
+
+.postag {
+    margin: 0;
+    padding: 5px;
+    width: 90px;
+    float: left;
+    font-family: Noto Sans JP;
+    font-size: 12pt;
+    color: black;
+    transition: color 0.5s ease;
+}
+
+.postag.emphasized {
+    font-weight: bold;
+}
+
+.postag.deemphasized {
+    color: #555;
+}
+
+.dot {
+    float: left;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin: 4px 5px 3px 3px;
+}
